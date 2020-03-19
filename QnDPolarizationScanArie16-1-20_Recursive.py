@@ -46,7 +46,7 @@ import time
 def openRawRotate(filePath):
     filePath = str(filePath)
     with imread(filePath) as rawimg:
-        img = rawimg.postprocess()   #Get RGB image from raw using default settings
+        img = rawimg.postprocess()   #Get RGB image from raw using default settings #makes array with RGB information
     #Rotate image to correct orientation
         import exifread
     f = open(filePath, 'rb')  # Open image file for reading (binary mode)
@@ -61,7 +61,7 @@ def openRawRotate(filePath):
 #%% Define drawer finding function
 
 def getroi(FilePath):
-    #Get the roi of the drawer
+    #Get the roi of the drawer #roi = region of interest
 
     img = openRawRotate(FilePath)  #Open raw image
             
@@ -98,7 +98,7 @@ def getroi(FilePath):
 #%%  Define label reading function
 
 def getlabel(roi,FilePath):   
-    from pylibdmtx.pylibdmtx import decode   #For reading label code
+    from pylibdmtx.pylibdmtx import decode   #For reading label code (barcode)
     img = openRawRotate(FilePath)  #Open raw image
     gray = img[:,:,2]  #Take the blue layer of the image, to make sure the wood edge of the box (reddish) is dark
     blurred = cv2.GaussianBlur(gray,(5,5),0)      #Blur image a little to remove noise
@@ -175,6 +175,7 @@ def getlabel(roi,FilePath):
     return Drawerlabel
 
 #%% Read EXIF time label function
+#The camera sometimes takes a picture while the other one is still being saved, the time is needed to keep the sequence of the photos
 
 def exiftime(path_name): 
    from datetime import datetime
@@ -201,8 +202,8 @@ def GenRandString(lenght):
 def read_data(filename):
     raw_data = imread(str(filename))
     raw_img = raw_data.raw_image.astype(np.float64)
-    raw_img -= 150
-    return raw_img    
+    raw_img -= 150 #Assuming the bias in the camera is on average 150 per pixel
+    return raw_img
 
 
 
@@ -216,6 +217,7 @@ root.destroy()
 #Get file locations in all subfolders
 folders = next(os.walk(directory))[1]
 
+#creating a folder to store the data
 for subfolder in folders:
     #t = time.time()
     CurSubFolder = Path(os.path.join(directory, subfolder))
@@ -239,7 +241,7 @@ for subfolder in folders:
         except: # catch *all* exceptions
             print('Results folder already exists')
     
-    #%% Run through file list and write time differences
+    #%% Run through file list and write time differences between photos
     
     TimeDiff = [0]*len(fileSets)
     for index, path in enumerate(fileSets):
@@ -295,13 +297,14 @@ for subfolder in folders:
         # I0-IR: intensity at 0/90/45/-45/left/right degrees
         # I_observed: no filter, same lighting as I0-IR
         # Il0, Il1, Il2: intensity without filter, at different angles
-        Qp, Qm, Up, Um, Vp, Vm, I_observed, Il0, Il1, Il2 = [read_data(f) for f in files]
+        Qp, Qm, Up, Um, Vp, Vm, I_observed, Il0, Il1, Il2 = [read_data(f) for f in files]  
         colours = imread(str(files[0])).raw_pattern
         
-        Q = Qp - Qm
+        Q = Qp - Qm #plus and minus
         U = Up - Um
         V = Vp - Vm
         
+#Calculating Stokes values
         I_Q = Qp + Qm
         I_U = Up + Um
         I_V = Vp + Vm
@@ -394,7 +397,7 @@ for subfolder in folders:
         
         #%% Calculate iridescence image
             
-        img7 = openRawRotate(str(files[7]))
+        img7 = openRawRotate(str(files[7])) #image without filter
         img8 = openRawRotate(str(files[8]))
             
         #First open and convert first two iridescence images to lab colorspace
@@ -481,3 +484,4 @@ winsound.Beep(frequency, duration)
         # Calculate chromaticity diff between iridescence images
         # Highlight iridescent objects (bbox) in separate iridescence image
         # Add EXIF file labels to allow sorting (e.g. by presence of polarization/iridescence) in windows explorer
+        
