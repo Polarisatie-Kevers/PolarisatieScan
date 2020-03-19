@@ -135,10 +135,10 @@ def ab(image1, image2):
     #som = np.array([0])
     a, b = 0, 0
     rangeab= np.linspace(-1, 1, 1000)
-    func = 1000000
+    func = 10000000000
     for i in rangeab:
         for j in rangeab:
-            new_func = np.sum( (diff - i * gradx - j * grady) ** 2)
+            new_func = np.sum(( (diff - i * gradx - j * grady) ** 2))
             if new_func < func:
                 func = new_func
                 a, b = i, j
@@ -153,13 +153,14 @@ def displace(im1, im2, row_range_b, row_range_e, col_range_b, col_range_e):
     a, b, som = ab(p, m)
     grady, gradx = np.gradient(m)
     f = (p - m) -  (a) * gradx - (b) * grady
+    g = np.sum((p - m)**2)
     fig, (ax1, ax2) = plt.subplots(1, 2)
     ax1.imshow(p - m)
     fig.colorbar(ax1.imshow(p - m), ax = ax1)
-    ax1.set_title('Verschil zonder gradient')
+    ax1.set_title('(f1 - f2) = ' + str(round(g, 3)))
     ax2.imshow(f)
     fig.colorbar(ax2.imshow(f), ax = ax2)
-    ax2.set_title('Verschil met gradient')
+    ax2.set_title('(f1 - f2) - a *grad(x) - b * grad(y) = '+ str(round(np.sqrt(som), 3))+ '\n(a,b) is (' + str(round(a, 3)) +' , '+ str(round(b, 3))+' )')
     return
 
 #Het expliciete pad is hier naar de series die genomen zijn zonder verschuiving van de lades
@@ -200,9 +201,9 @@ Qm_Rn, Qm_Gn, Qm_Bn, Qm_G2n = normaliseren(Qm_R), normaliseren(Qm_G), normaliser
 #lcp1_R, lcp1_G, lcp1_B, lcp1_G2 = split_RGBG(lcp1_RGBG)
 #rcp_lcpR, rcp_lcpG, rcp_lcpB, rcp_lcpG2 = normaliseren(rcp1_R - lcp1_R), normaliseren(rcp1_G - lcp1_G), normaliseren(rcp1_B - lcp1_B), normaliseren(rcp1_G2 - lcp1_G2)  
 
-displace(Qp_Gn, Qm_Gn, 1110, 1270, 900, 1070) # 8 cubes
+#displace(Qp_Gn, Qm_Gn, 1110, 1270, 900, 1070) # 8 cubes
 #displace(Qp_Gn, Qm_Gn, 1150, 1230, 945, 1025) # 4 cubes
-#displace(Qp_Gn, Qm_Gn, 1170, 1215, 960, 1005) # 2 cubes
+displace(Qp_Gn, Qm_Gn, 1170, 1215, 960, 1005) # 2 cubes
 
 #plt.imshow(rcp1_RGBG[1,1200:1650,1480:1860], vmin=-1000, vmax=1000)
 #plt.colorbar()
